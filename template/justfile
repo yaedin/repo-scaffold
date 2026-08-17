@@ -1,0 +1,82 @@
+# Task runner. Bootstrap is `uv sync` — that installs `just` itself, so this file
+# is the only thing you need to read to know what the repo can do.
+#
+# CROSS-PLATFORM RULE: every recipe body is a single `uv run python ...` line.
+# No shell built-ins (rm, cp, &&, globs) — those are what break on Windows.
+# All real logic lives in Python under src/lab/ and scripts/.
+
+default:
+    @just --list
+
+# Fill in project metadata (name, title, author, description) across the repo.
+# Interactive on purpose: just's variadic args do not preserve quoting, so a
+# multi-word title would shatter, and the shell-level fix ("$@") is not portable
+# to Windows. For scripted use call the script directly, where flags work:
+#   uv run python scripts/init.py --title "My Project" --name my-project --yes
+init:
+    uv run python scripts/init.py
+
+# Run the end-to-end smoke experiment: records -> summary -> report -> figure.
+# No GPU, no API keys, no network. Under 10 seconds. This proves the scaffold works.
+smoke:
+    uv run python experiments/e00_smoke/run.py
+    uv run python experiments/e00_smoke/analyze.py
+
+# Unit tests for the src/lab machinery.
+test:
+    uv run pytest
+
+# Lint + format check.
+lint:
+    uv run ruff check .
+    uv run ruff format --check .
+
+# Auto-fix what can be auto-fixed.
+fmt:
+    uv run ruff check --fix .
+    uv run ruff format .
+
+# Integrity gate: every path cited in CLAIMS.md and AGENTS.md must exist.
+# This is what stops the claim ledger and the repo map from silently going stale.
+check:
+    uv run python -m lab.check
+
+# Regenerate every committed figure from its source data.
+figures:
+    uv run python scripts/figures.py
+
+# The full gate. Run before you commit anything you care about.
+#
+# Order matters: `smoke` runs before `check` because it PRODUCES artifacts that
+# CLAIMS.md cites. Checking first would fail on a fresh clone that has not yet
+# regenerated them.
+verify: lint test smoke check
+
+# verify, plus the two recipes most likely to break unnoticed.
+#
+# `verify` deliberately does not run `figures` or `paper`: they are slower, and
+# `paper` needs the optional `paper` dependency group. Both broke during a sprint
+# without CI noticing, precisely because nothing ran them — which is the argument
+# for this recipe existing and for CI running THIS one rather than `verify`.
+#
+# `paper` is last because it is the only step with an optional dependency; if you
+# have not run `uv sync --group paper`, everything above it has still run.
+verify-full: verify figures paper
+
+# Publication gate: functions 6 and 7. Run before making the repo public.
+publish-check:
+    uv run python scripts/publish_check.py
+
+# Render the Markdown writeup to PDF via Typst. No LaTeX needed.
+# Requires `uv sync --group paper`.
+paper:
+    uv run python scripts/build_paper.py
+
+# Per-section prose word counts for the writeup. Informational: always exits 0,
+# never gates anything, no target to configure. Use it during reduction passes.
+wordcount:
+    uv run python scripts/wordcount.py
+
+# Remove generated output. Source and committed evidence are untouched.
+clean:
+    uv run python scripts/clean.py

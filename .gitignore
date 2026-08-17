@@ -1,0 +1,20 @@
+# Repo-level ignores. template/.gitignore still governs everything under
+# template/ — git applies a .gitignore relative to its own directory.
+
+# Internal work order from the field-use review, not documentation.
+IMPROVEMENTS-FROM-FIELD-USE.md
+
+# --- Environments and caches --------------------------------------------------
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# --- OS / editor ---------------------------------------------------------------
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

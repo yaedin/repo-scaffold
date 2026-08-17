@@ -1,0 +1,73 @@
+{
+  "backend": {
+    "backend": "stub",
+    "dtype": "float64",
+    "model_id": "bernoulli-coin",
+    "reportable": false
+  },
+  "comparisons": {
+    "null_control": {
+      "delta": 0.0,
+      "p_value": 1.0,
+      "z": 0.0
+    },
+    "treatment_vs_control": {
+      "delta": 0.14375,
+      "p_value": 0.0002548643591404609,
+      "z": 3.6573217698945903
+    }
+  },
+  "experiment": "e00_smoke",
+  "figure": "figures/e00_smoke_rates.png",
+  "generated_utc": "2026-08-17T08:29:11+00:00",
+  "git_dirty": true,
+  "git_sha": "77509359844e9c1d0845227d6f1724e609988a33",
+  "integrity": {
+    "cells": {
+      "arm=control | item_id=item_00": 40,
+      "arm=control | item_id=item_01": 40,
+      "arm=control | item_id=item_02": 40,
+      "arm=control | item_id=item_03": 40,
+      "arm=control | item_id=item_04": 40,
+      "arm=control | item_id=item_05": 40,
+      "arm=control | item_id=item_06": 40,
+      "arm=control | item_id=item_07": 40,
+      "arm=treatment | item_id=item_00": 40,
+      "arm=treatment | item_id=item_01": 40,
+      "arm=treatment | item_id=item_02": 40,
+      "arm=treatment | item_id=item_03": 40,
+      "arm=treatment | item_id=item_04": 40,
+      "arm=treatment | item_id=item_05": 40,
+      "arm=treatment | item_id=item_06": 40,
+      "arm=treatment | item_id=item_07": 40
+    },
+    "issues": [],
+    "n_records": 640,
+    "ok": true,
+    "provenance": {
+      "backend": "stub",
+      "dtype": "float64",
+      "model_id": "bernoulli-coin"
+    }
+  },
+  "n_records": 640,
+  "n_shards": 2,
+  "per_arm": {
+    "control": {
+      "ci_hi": 0.5358913358184912,
+      "ci_lo": 0.42705349513839175,
+      "n": 320,
+      "rate": 0.48125,
+      "successes": 154
+    },
+    "treatment": {
+      "ci_hi": 0.6762656148295563,
+      "ci_lo": 0.5707688454578914,
+      "n": 320,
+      "rate": 0.625,
+      "successes": 200
+    }
+  },
+  "reportable": false,
+  "seed": 0
+}

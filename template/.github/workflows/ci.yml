@@ -1,0 +1,45 @@
+name: verify
+
+# Runs the same gate you run locally: lint, tests, path checks, and the
+# end-to-end smoke experiment. The smoke experiment needs no GPU, no API key and
+# no network, so CI is free and fast — which is the only reason it stays green.
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+# Force UTF-8 for every process this workflow starts. src/lab/__init__.py
+# reconfigures stdout for anything that imports `lab`; this covers the entry
+# points that do not (ruff, pytest's own output, plain scripts). Without it the
+# Windows runner encodes stdout as cp1252 and dies on the first Δ it prints.
+env:
+  PYTHONIOENCODING: utf-8
+  PYTHONUTF8: "1"
+
+jobs:
+  verify:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # The scaffold claims to be platform-independent. This is where that claim
+        # is tested rather than asserted.
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      # --group paper installs typst, so CI can build the PDF. It is optional
+      # locally and required here, which is the point: `just paper` broke during
+      # a sprint without CI noticing, because nothing ran it.
+      - name: Sync environment
+        run: uv sync --group paper
+
+      - name: Verify
+        run: uv run just verify-full

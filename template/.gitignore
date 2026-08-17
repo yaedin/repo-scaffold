@@ -1,0 +1,62 @@
+# --- Secrets -----------------------------------------------------------------
+.env
+*.key
+*.pem
+
+# --- Experiment output: DENY BY DEFAULT ----------------------------------------
+# Raw measurement records are gitignored on purpose. They are regenerable from
+# run.py + manifest.json, they get large, and in eval work they can contain
+# material you should not redistribute. Everything a reader needs to check your
+# arithmetic is in summary.json and RESULTS.md, both of which ARE committed.
+#
+# WHY DENY-BY-DEFAULT AND NOT A LIST OF DIRECTORIES:
+# The rule this replaces enumerated directory NAMES — output/acts/,
+# output/acts_verify/. A third directory, acts_axes/, was created later in the
+# sprint, matched none of them, and put 894 MB of raw activation tensors into git
+# history. It surfaced only when the first push to a public remote hung, and
+# recovery meant git-filter-repo and a force-push, under deadline pressure.
+#
+# An allowlist cannot have that failure mode. Anything new under an output
+# directory is ignored the moment it is created, whatever it is called; the
+# small derived artifacts that constitute the evidence are named explicitly
+# below. Adding a new kind of evidence is a deliberate one-line edit here —
+# which is the correct amount of friction, given what the alternative cost.
+experiments/**/output*/**
+
+# The evidence. Small, derived, human-checkable, committed.
+!experiments/**/output*/summary.json
+!experiments/**/output*/manifest.json
+!experiments/**/output*/RESULTS.md
+
+# --- Python -------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# --- Models and large local caches ---------------------------------------------
+models/
+checkpoints/
+*.safetensors
+*.ckpt
+*.pt
+*.bin
+
+# --- Rendered output ----------------------------------------------------------
+# Paper SOURCE is committed; the rendered PDF is a build artifact.
+writeup/*.pdf
+
+# The Typst intermediate that scripts/build_paper.py generates from the Markdown.
+# Named `.generated.typ` rather than `.typ` so this rule cannot swallow a Typst
+# file someone wrote by hand and intends as their source.
+writeup/*.generated.typ
+
+# --- OS -----------------------------------------------------------------------
+.DS_Store
+Thumbs.db

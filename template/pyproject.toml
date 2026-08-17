@@ -1,0 +1,66 @@
+[project]
+name = "scaffold-project"
+version = "0.1.0"
+description = "A research project. Replace this line via `just init`."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Yasin Edin" }]
+
+# Runtime dependencies. Deliberately tiny: the scaffold's own machinery needs
+# only numpy and matplotlib. Add project dependencies below as you need them
+# (torch, transformers, ...) and re-run `uv sync` to update uv.lock.
+dependencies = [
+    "numpy>=2.0",
+    "matplotlib>=3.9",
+]
+
+[dependency-groups]
+# Installed by `uv sync`, pinned in uv.lock, never assumed present on the machine.
+# `rust-just` is the `just` command runner shipped as a Python wheel, so the one
+# bootstrap command is `uv sync` and nothing else about your machine matters.
+dev = [
+    "rust-just>=1.40",
+    "pytest>=8.0",
+    "ruff>=0.6",
+]
+
+# Optional: local PDF rendering of writeup/paper.md. Not installed by default.
+# `uv sync --group paper` if you want it. typst has wheels for macOS, Linux and
+# Windows; pandoc+LaTeX deliberately avoided as it is not pip-installable.
+paper = [
+    "typst>=0.11",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/lab"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+src = ["src", "experiments", "scripts", "tests"]
+
+[tool.ruff.lint]
+# Preview is enabled HERE and not at `[tool.ruff]`, on purpose. Top-level
+# `preview = true` also switches the FORMATTER into preview mode, which reflows
+# working code (it rewrote every multi-line dict literal in run.py on first try).
+# Scoping it to the linter buys PLW1514 without letting unstable formatting
+# churn the diff.
+preview = true
+
+# PLW1514 flags text IO that relies on the platform default encoding — cp1252 on
+# Windows, which cannot encode the Δ/×/ℓ/≈ that generated reports are full of.
+#
+# Known limit, so nobody mistakes this for full coverage: ruff only flags a
+# `.write_text()`/`.read_text()` when it can infer the receiver is a `pathlib.Path`.
+# Helpers here are typed `Path | str`, and the union defeats that inference — so
+# the rule catches builtin `open()` and direct `Path(...)` calls, and the rest is
+# held by convention plus the stdout reconfiguration in src/lab/__init__.py.
+select = ["E", "F", "I", "UP", "B", "PLW1514"]

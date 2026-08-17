@@ -1,0 +1,37 @@
+{
+  "timestamp_utc": "2026-08-17T08:29:09+00:00",
+  "git_sha": "77509359844e9c1d0845227d6f1724e609988a33",
+  "git_dirty": true,
+  "seed": 0,
+  "provenance": {
+    "backend": "stub",
+    "model_id": "bernoulli-coin",
+    "dtype": "float64"
+  },
+  "backend": {
+    "backend": "stub",
+    "model_id": "bernoulli-coin",
+    "dtype": "float64",
+    "reportable": false
+  },
+  "python": "3.12.10",
+  "platform": "macOS-26.5.2-arm64-arm-64bit",
+  "device": "cpu",
+  "versions": {
+    "numpy": "2.5.1",
+    "matplotlib": "3.11.1"
+  },
+  "params": {
+    "arms": {
+      "control": 0.5,
+      "treatment": 0.62
+    },
+    "n_items": 8,
+    "n_replicates": 40,
+    "total_records": 640,
+    "shards": [
+      "control",
+      "treatment"
+    ]
+  }
+}

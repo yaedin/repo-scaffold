@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+title: Untitled Research Project
+message: If you use this work, please cite it as below.
+type: software
+authors:
+  - family-names: Edin
+    given-names: Yasin
+    # orcid: "https://orcid.org/REPLACE-WITH-YOUR-ORCID"
+repository-code: "https://github.com/REPLACE/scaffold-project"
+abstract: A research project. Replace this line via `just init`.
+license: MIT
+date-released: "{{DATE}}"
+version: 0.1.0
