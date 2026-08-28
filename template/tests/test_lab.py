@@ -22,7 +22,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from lab import check, size
 from lab.analysis import check_records, two_proportion_ztest, wilson_ci
 from lab.analysis.stats import _z_critical, bootstrap_ci
-from lab.check import looks_like_path, paths_in
+from lab.check import cites_explore, looks_like_path, paths_in
 from lab.core import backend, provenance, records, seeds
 from lab.core import checkpoint as checkpoint_mod
 from lab.core.checkpoint import Checkpoint
@@ -650,3 +650,67 @@ def test_wordcount_counts_link_text_not_the_url():
     # "see the paper" is 3 words; the URL contributes none.
     md = "## S\nsee [the paper](https://example.com/very/long/path)\n"
     assert dict((n, c) for n, c, _ in wordcount.sections(md))["S"] == 3
+
+
+# --- the explore/ boundary ----------------------------------------------------
+#
+# `explore/` is gitignored and not reproducible by design. A claim sourced from
+# there is unverifiable by anyone, including its author, so the linter refuses it.
+# These tests exist because the boundary is only worth having if it holds under a
+# deadline, which is exactly when someone will try to quote a notebook.
+
+
+def test_cites_explore_catches_a_notebook():
+    assert cites_explore("explore/scratch.ipynb")
+    assert cites_explore("explore/nested/day3.ipynb")
+
+
+def test_cites_explore_accepts_pointer_and_trailing_slash_forms():
+    assert cites_explore("explore/out/summary.json#a.b")
+    assert cites_explore("explore/")
+
+
+def test_cites_explore_leaves_real_experiment_paths_alone():
+    assert not cites_explore("experiments/e00_smoke/analyze.py")
+    assert not cites_explore("src/lab/check.py")
+    assert not cites_explore("experiments/e00_smoke/output/summary.json#comparisons.main.delta")
+
+
+def test_cites_explore_does_not_match_a_lookalike_prefix():
+    """`exploration/` is a different directory and must not be caught."""
+    assert not cites_explore("exploration/notes.py")
+    assert not cites_explore("docs/explore/notes.py")
+
+
+def test_claims_may_not_cite_explore(tmp_path, monkeypatch):
+    """A claim row sourced from explore/ fails the build with a usable message."""
+    from lab import check as check_mod
+
+    (tmp_path / "CLAIMS.md").write_text(
+        "## Claims\n\n"
+        "| ID | Claim | Number | Status | Produced by | Artifact |\n"
+        "|---|---|---|---|---|---|\n"
+        "| C01 | Noticed in a notebook. | d = 0.5 | POSITIVE | `explore/day3.ipynb` | - |\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(check_mod, "REPO_ROOT", tmp_path)
+
+    problems = check_mod.check_claims_avoid_explore()
+    assert len(problems) == 1
+    assert "C01" in problems[0]
+    assert "explore/day3.ipynb" in problems[0]
+    assert "promote it to an experiment" in problems[0]
+
+
+def test_claims_citing_experiments_pass_the_explore_guard(tmp_path, monkeypatch):
+    from lab import check as check_mod
+
+    (tmp_path / "CLAIMS.md").write_text(
+        "## Claims\n\n"
+        "| ID | Claim | Number | Status | Produced by | Artifact |\n"
+        "|---|---|---|---|---|---|\n"
+        "| C01 | Promoted properly. | d = 0.5 | POSITIVE | `experiments/e01_x/analyze.py` | - |\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(check_mod, "REPO_ROOT", tmp_path)
+    assert check_mod.check_claims_avoid_explore() == []

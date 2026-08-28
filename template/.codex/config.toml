@@ -1,0 +1,7 @@
+# Project-scoped connection to the loopback-only JupyterLab server started by
+# `uv run just explore`. Reopen this project in Codex after starting the server
+# so Codex loads the connection.
+[mcp_servers.jupyter]
+url = "http://127.0.0.1:8888/mcp"
+startup_timeout_sec = 120
+tool_timeout_sec = 3600

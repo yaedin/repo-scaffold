@@ -25,6 +25,15 @@ dev = [
     "ruff>=0.6",
 ]
 
+# Optional: interactive exploration with JupyterLab and project-scoped agent
+# access. Not installed by default: `uv sync --group explore`. Provider clients
+# such as Modal belong in the project, not this provider-neutral scaffold.
+explore = [
+    "jupyterlab>=4.2",
+    "jupyter-mcp-server>=1.5.2",
+    "pandas>=2.2",
+]
+
 # Optional: local PDF rendering of writeup/paper.md. Not installed by default.
 # `uv sync --group paper` if you want it. typst has wheels for macOS, Linux and
 # Windows; pandoc+LaTeX deliberately avoided as it is not pip-installable.

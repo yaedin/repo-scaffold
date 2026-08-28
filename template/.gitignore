@@ -28,6 +28,22 @@ experiments/**/output*/**
 !experiments/**/output*/manifest.json
 !experiments/**/output*/RESULTS.md
 
+# --- Exploration notebooks -----------------------------------------------------
+# Gitignored on purpose. explore/ is the disposable half of the repo: the output
+# is knowledge rather than a defensible number. What IS committed is
+# explore/FINDINGS.md, the highlights doc — the mess stays out, the knowledge
+# does not. `just check` forbids CLAIMS.md from citing this directory, which is
+# what keeps exploratory artifacts out of the evidence chain.
+explore/**/*.ipynb
+explore/**/output/
+explore/**/scratch/
+.jupyter/
+.jupyter_ystore.db*
+
+# Keep the two committed files.
+!explore/README.md
+!explore/FINDINGS.md
+
 # --- Python -------------------------------------------------------------------
 __pycache__/
 *.py[cod]

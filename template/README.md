@@ -47,11 +47,15 @@ behaves identically on macOS, Linux and Windows. Then:
 | `just wordcount` | Per-section prose word counts. Informational only. |
 | `just publish-check` | Licence, citation, figures, paper source, unresolved claims, repo size |
 
+Interactive notebook exploration is optional. Setup, agent connection, remote
+execution, and shutdown instructions live in [`explore/README.md`](explore/README.md).
+
 ## Layout
 
 | Path | Contents |
 |---|---|
 | `experiments/` | One directory per experiment: spec.md, run.py, analyze.py, RESULTS.md |
+| `explore/` | Optional notebooks and the committed `FINDINGS.md`; see its README |
 | `src/lab/` | Reusable machinery — paths, seeds, manifests, statistics, integrity checks |
 | `figures/` | Committed figures (PDF for the paper, PNG for the web), regenerated on demand |
 | `writeup/` | Paper source |

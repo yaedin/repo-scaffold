@@ -1,6 +1,6 @@
 """Fail the build when the repo's own documentation stops being true.
 
-Three failure modes this exists to prevent, all observed in the wild:
+Five failure modes this exists to prevent, all observed in the wild:
 
 **A claim with no source.** A number reaches the paper, and by the time anyone
 asks which script produced it, nobody can say. `CLAIMS.md` binds every claim to a
@@ -21,6 +21,11 @@ cited in `AGENTS.md` must resolve, or this fails.
 **A large blob reaching history.** Cheap to prevent, expensive to undo — see
 `lab.size` for the incident that motivated it.
 
+**A claim resting on an exploration notebook.** `explore/` is deliberately
+disposable and gitignored, so a claim citing it is a claim nobody — including you
+— can ever re-run. Barring those citations is what lets the notebooks stay messy:
+the mess is only expensive when something you will defend depends on it.
+
 Escape hatch: put `<!-- check:ignore -->` at the end of a line to skip it.
 
 Run with `just check` or `uv run python -m lab.check`.
@@ -38,6 +43,9 @@ from lab import size
 from lab.core.paths import REPO_ROOT
 
 BACKTICKED = re.compile(r"`([^`]+)`")
+
+#: Nothing under here may back a claim. See `check_claims_avoid_explore`.
+EXPLORE_DIR = "explore"
 IGNORE_MARKER = "<!-- check:ignore -->"
 
 # Tokens that look like paths but are commands or placeholders.
@@ -158,6 +166,52 @@ def check_claims_have_sources() -> list[str]:
     return problems
 
 
+def cites_explore(token: str) -> bool:
+    """Is this citation a path inside the disposable exploration directory?
+
+    Deliberately does not reuse `looks_like_path`, which requires a separator so
+    that bare words in prose are not mistaken for files. That rule is right for
+    "does this path exist" and wrong here: it would let a claim cite the bare
+    directory `explore/` and escape the guard. Inside a claim row a lone
+    `explore` is a reference to the directory anyway, so matching it is correct.
+    """
+    candidate = _strip_pointer(token.strip()).rstrip("/")
+    if not candidate or " " in candidate or PLACEHOLDER_CHARS & set(candidate):
+        return False
+    return Path(candidate).parts[:1] == (EXPLORE_DIR,)
+
+
+def check_claims_avoid_explore() -> list[str]:
+    """No claim may be sourced from `explore/`.
+
+    The exploration directory exists to be fast and disposable: notebooks there
+    are gitignored, hold state across cells, and are not reproducible by design.
+    That is a good trade for the stage where the output is knowledge, and a
+    disqualifying one for the stage where the output is a number in a paper.
+
+    Enforcing it here rather than by discipline is the whole point. A convention
+    that "notebooks are only for exploration" degrades the first time a deadline
+    makes it convenient to quote one; a build failure does not.
+
+    The fix when this fires is the promotion path, not the escape hatch: move the
+    computation into `experiments/eNN_slug/analyze.py`, have it write a real
+    artifact, and cite that.
+    """
+    if not (REPO_ROOT / "CLAIMS.md").exists():
+        return []
+
+    problems = []
+    for lineno, line, cells in _claim_rows():
+        for token in BACKTICKED.findall(line):
+            if cites_explore(token):
+                problems.append(
+                    f"CLAIMS.md:{lineno}: claim {cells[0]!r} is sourced from "
+                    f"{_strip_pointer(token.strip())!r}, but {EXPLORE_DIR}/ is disposable and "
+                    f"gitignored — promote it to an experiment before claiming it"
+                )
+    return problems
+
+
 # --- claim values must match the artifacts they point at ----------------------
 #
 # Checking that a cited file EXISTS is necessary and not sufficient. A number can
@@ -259,6 +313,7 @@ def main() -> int:
     problems += check_file("CLAIMS.md")
     problems += check_file("README.md")
     problems += check_claims_have_sources()
+    problems += check_claims_avoid_explore()
     problems += check_claim_values()
 
     # Kept separate so the closing advice can match the failure. "Retract the

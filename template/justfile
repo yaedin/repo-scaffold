@@ -77,6 +77,13 @@ paper:
 wordcount:
     uv run python scripts/wordcount.py
 
+# Start JupyterLab for the exploration stage. See explore/README.md for setup,
+# supported local/remote arrangements, agent access, and clean shutdown.
+# Authentication is disabled only because the server is bound to loopback. Keep
+# this binding when forwarding a remote port; never expose this command publicly.
+explore:
+    uv run jupyter lab --no-browser --ip 127.0.0.1 --port 8888 --ServerApp.allow_remote_access=False --ServerApp.disable_check_xsrf=True --IdentityProvider.token=''
+
 # Remove generated output. Source and committed evidence are untouched.
 clean:
     uv run python scripts/clean.py
